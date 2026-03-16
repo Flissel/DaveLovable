@@ -8,6 +8,7 @@ import Projects from "./pages/Projects";
 import Editor from "./pages/Editor";
 import NotFound from "./pages/NotFound";
 import Documentation from "./pages/Documentation";
+import Marketplace from "./pages/Marketplace";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/editor" element={<Navigate to="/projects" replace />} />
           <Route path="/editor/:projectId" element={<Editor />} />
           <Route path="/docs" element={<Documentation />} />
+          <Route path="/marketplace" element={<Marketplace />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
