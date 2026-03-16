@@ -1,17 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Menu, X, GithubIcon } from "lucide-react";
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { EngineStatusPill } from "@/components/engine/EngineStatusPill";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const location = useLocation();
 
   const navLinks = [
-    { label: "Projects", href: "/projects" },
-    { label: "Marketplace", href: "/marketplace" },
-    { label: "Docs", href: "/docs" },
+    { label: "Projects", to: "/projects" },
+    { label: "Marketplace", to: "/marketplace" },
+    { label: "Docs", to: "/docs" },
   ];
 
   return (
@@ -19,23 +18,29 @@ const Navbar = () => {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <a href="/" className="flex items-center gap-2">
+          <NavLink to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-lg">D</span>
             </div>
             <span className="text-xl font-bold text-foreground">DaveLovable</span>
-          </a>
+          </NavLink>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          {/* Desktop Navigation — Tab-style */}
+          <div className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
-              <a
+              <NavLink
                 key={link.label}
-                href={link.href}
-                className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium"
+                to={link.to}
+                className={({ isActive }) =>
+                  `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                  }`
+                }
               >
                 {link.label}
-              </a>
+              </NavLink>
             ))}
           </div>
 
@@ -54,9 +59,9 @@ const Navbar = () => {
               Sign in
             </Button>
             <Button variant="hero" size="sm" asChild>
-              <a href="/">
+              <NavLink to="/">
                 Start Building
-              </a>
+              </NavLink>
             </Button>
           </div>
 
@@ -72,23 +77,32 @@ const Navbar = () => {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden pt-4 pb-6 border-t border-border/30 mt-4">
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
               {navLinks.map((link) => (
-                <a
+                <NavLink
                   key={link.label}
-                  href={link.href}
-                  className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium"
+                  to={link.to}
+                  className={({ isActive }) =>
+                    `px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    }`
+                  }
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {link.label}
-                </a>
+                </NavLink>
               ))}
-              <div className="flex flex-col gap-2 pt-4 border-t border-border/30">
+              <div className="flex flex-col gap-2 pt-4 mt-2 border-t border-border/30">
+                <div className="px-4 py-1">
+                  <EngineStatusPill />
+                </div>
                 <a
                   href="https://github.com/davidmonterocrespo24/DaveLovable"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium"
+                  className="flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium"
                 >
                   <GithubIcon size={18} />
                   <span>GitHub</span>
@@ -97,9 +111,9 @@ const Navbar = () => {
                   Sign in
                 </Button>
                 <Button variant="hero" size="sm" asChild>
-                  <a href="/">
+                  <NavLink to="/">
                     Start Building
-                  </a>
+                  </NavLink>
                 </Button>
               </div>
             </div>

@@ -1,8 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useProjects, useCreateProject, useDeleteProject, useFavoriteProject } from '@/hooks/useProjects';
+import { useEngineProjects } from '@/hooks/useEngine';
 import { Button } from '@/components/ui/button';
 import { Plus, Folder, ArrowRight, Sparkles } from 'lucide-react';
 import { ProjectCard } from '@/components/ProjectCard';
+import { UnifiedProjectCard } from '@/components/projects/UnifiedProjectCard';
+import { ProjectFilters } from '@/components/projects/ProjectFilters';
 import { useState } from 'react';
 import {
   AlertDialog,
@@ -32,6 +35,7 @@ import Footer from "@/components/Footer";
 const Projects = () => {
   const navigate = useNavigate();
   const { data: projects, isLoading } = useProjects();
+  const { data: engineProjects, isLoading: engineLoading } = useEngineProjects();
   const createProject = useCreateProject();
   const deleteProject = useDeleteProject();
   const favoriteProject = useFavoriteProject();
@@ -41,6 +45,7 @@ const Projects = () => {
   const [projectDescription, setProjectDescription] = useState('');
   const [deleteProjectId, setDeleteProjectId] = useState<number | null>(null);
   const [deleteProjectName, setDeleteProjectName] = useState('');
+  const [filter, setFilter] = useState('all');
 
   // Sort projects by favorites first, then by created_at descending (newest first)
   const sortedProjects = projects?.slice().sort((a, b) => {
@@ -51,6 +56,13 @@ const Projects = () => {
     // Then sort by creation date (newest first)
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
+
+  // Filter logic
+  const filteredVibeProjects = filter === 'all' || filter === 'vibe' ? sortedProjects : [];
+  const filteredEngineProjects = filter === 'all' || filter === 'engine' ? engineProjects : [];
+  // "running" filter: in the future, filter engine projects with active generation
+  const hasAnyProjects = (filteredVibeProjects && filteredVibeProjects.length > 0) ||
+    (filteredEngineProjects && filteredEngineProjects.length > 0);
 
   const handleCreateProject = async () => {
     if (!projectName.trim()) {
@@ -131,7 +143,7 @@ const Projects = () => {
   };
 
   // Show skeleton UI during loading for better UX
-  const showSkeleton = isLoading && !projects;
+  const showSkeleton = (isLoading && !projects) || (engineLoading && !engineProjects);
 
   return (
     <main className="min-h-screen bg-background">
@@ -156,7 +168,7 @@ const Projects = () => {
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-6xl mx-auto">
             {/* Header */}
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-12 animate-fade-in-up">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 animate-fade-in-up">
               <div>
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-4">
                   <Sparkles className="w-4 h-4 text-primary" />
@@ -179,6 +191,11 @@ const Projects = () => {
               </Button>
             </div>
 
+            {/* Filter Bar */}
+            <div className="mb-8 animate-fade-in-up delay-100">
+              <ProjectFilters active={filter} onChange={setFilter} />
+            </div>
+
             {/* Projects Grid */}
             {showSkeleton ? (
               /* Skeleton Loading State */
@@ -195,7 +212,7 @@ const Projects = () => {
                   </div>
                 ))}
               </div>
-            ) : !projects || projects.length === 0 ? (
+            ) : !hasAnyProjects ? (
               <div className="text-center py-20 animate-fade-in">
                 <div className="glass rounded-3xl p-12 max-w-2xl mx-auto glow-accent">
                   <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
@@ -217,16 +234,46 @@ const Projects = () => {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up delay-200">
-                {sortedProjects?.map((project, index) => (
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    index={index}
-                    onDelete={handleDeleteProject}
-                    onToggleFavorite={handleToggleFavorite}
-                  />
-                ))}
+              <div className="space-y-10 animate-fade-in-up delay-200">
+                {/* Engine Projects Section */}
+                {filteredEngineProjects && filteredEngineProjects.length > 0 && (
+                  <div>
+                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <span className="text-blue-400">Engine Projects</span>
+                      <span className="text-xs text-muted-foreground font-normal bg-muted/50 px-2 py-0.5 rounded-full">
+                        {filteredEngineProjects.length}
+                      </span>
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {filteredEngineProjects.map((ep) => (
+                        <UnifiedProjectCard key={`engine-${ep.name}`} engineProject={ep} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Vibe Projects Section */}
+                {filteredVibeProjects && filteredVibeProjects.length > 0 && (
+                  <div>
+                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <span className="text-purple-400">Vibe Projects</span>
+                      <span className="text-xs text-muted-foreground font-normal bg-muted/50 px-2 py-0.5 rounded-full">
+                        {filteredVibeProjects.length}
+                      </span>
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {filteredVibeProjects.map((project, index) => (
+                        <ProjectCard
+                          key={project.id}
+                          project={project}
+                          index={index}
+                          onDelete={handleDeleteProject}
+                          onToggleFavorite={handleToggleFavorite}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
